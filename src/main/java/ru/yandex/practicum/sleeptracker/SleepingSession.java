@@ -1,0 +1,101 @@
+package ru.yandex.practicum.sleeptracker;
+
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+
+public class SleepingSession {
+    private final LocalDateTime startDateTime;
+    private final LocalDateTime endDateTime;
+    private final SleepQuality sleepQuality;
+
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
+
+    public SleepingSession(String startTime, String startDate, String endTime, String endDate, String sleepQuality) {
+        LocalDate startDateParsed = LocalDate.parse(startDate, DATE_FORMATTER);
+        LocalTime startTimeParsed = LocalTime.parse(startTime, TIME_FORMATTER);
+        LocalDate endDateParsed = LocalDate.parse(endDate, DATE_FORMATTER);
+        LocalTime endTimeParsed = LocalTime.parse(endTime, TIME_FORMATTER);
+
+        this.startDateTime = LocalDateTime.of(startDateParsed, startTimeParsed);
+        this.endDateTime = LocalDateTime.of(endDateParsed, endTimeParsed);
+        this.sleepQuality = SleepQuality.valueOf(sleepQuality);
+
+        if (endDateTime.isBefore(startDateTime)) {
+            throw new IllegalArgumentException("Дата окончания не может быть раньше даты начала");
+        }
+    }
+
+    public LocalDateTime getStartDateTime() {
+        return startDateTime;
+    }
+
+    public LocalDateTime getEndDateTime() {
+        return endDateTime;
+    }
+
+    public LocalDate getStartDate() {
+        return startDateTime.toLocalDate();
+    }
+
+    public LocalTime getStartTime() {
+        return startDateTime.toLocalTime();
+    }
+
+    public LocalTime getEndTime() {
+        return endDateTime.toLocalTime();
+    }
+
+    public LocalDate getEndDate() {
+        return endDateTime.toLocalDate();
+    }
+
+    public SleepQuality getSleepQuality() {
+        return sleepQuality;
+    }
+
+    public long getSleepDuration() {
+        return Duration.between(startDateTime, endDateTime).toMinutes();
+    }
+
+    public boolean isNightSleep() {
+        LocalTime startTime = getStartTime();
+        LocalTime endTime = getEndTime();
+        LocalDate startDate = getStartDate();
+        LocalDate endDate = getEndDate();
+
+        if (startDate.equals(endDate)) {
+            return startTime.isBefore(LocalTime.of(6, 0)) &&
+                    endTime.isAfter(LocalTime.MIDNIGHT);
+        } else {
+            return true;
+        }
+    }
+
+    public Chronotype getChronotypeForNight() {
+        if (!isNightSleep()) {
+            return null;
+        }
+
+        LocalTime startTime = getStartTime();
+        LocalTime endTime = getEndTime();
+
+        if (startTime.isAfter(LocalTime.of(23, 0)) &&
+                endTime.isAfter(LocalTime.of(9, 0))) {
+            return Chronotype.OWL;
+        } else if (startTime.isBefore(LocalTime.of(22, 0)) &&
+                endTime.isBefore(LocalTime.of(7, 0))) {
+            return Chronotype.LARK;
+        } else {
+            return Chronotype.DOVE;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return startDateTime.format(DATE_TIME_FORMATTER) + " - " +
+                endDateTime.format(DATE_TIME_FORMATTER) + " (" + sleepQuality + ")";
+    }
+}
