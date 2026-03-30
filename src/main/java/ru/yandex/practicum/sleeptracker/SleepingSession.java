@@ -8,6 +8,12 @@ public class SleepingSession {
     private final LocalDateTime endDateTime;
     private final SleepQuality sleepQuality;
 
+    private static final int HOUR_23 = 23;
+    private static final int HOUR_22 = 22;
+    private static final int HOUR_9 = 9;
+    private static final int HOUR_7 = 7;
+    private static final int MINUTE_0 = 0;
+
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
@@ -81,11 +87,11 @@ public class SleepingSession {
         LocalTime startTime = getStartTime();
         LocalTime endTime = getEndTime();
 
-        if (startTime.isAfter(LocalTime.of(23, 0)) &&
-                endTime.isAfter(LocalTime.of(9, 0))) {
+        if (startTime.isAfter(LocalTime.of(HOUR_23, MINUTE_0)) &&
+                endTime.isAfter(LocalTime.of(HOUR_9, MINUTE_0))) {
             return Chronotype.OWL;
-        } else if (startTime.isBefore(LocalTime.of(22, 0)) &&
-                endTime.isBefore(LocalTime.of(7, 0))) {
+        } else if (startTime.isBefore(LocalTime.of(HOUR_22, MINUTE_0)) &&
+                endTime.isBefore(LocalTime.of(HOUR_7, MINUTE_0))) {
             return Chronotype.LARK;
         } else {
             return Chronotype.DOVE;
