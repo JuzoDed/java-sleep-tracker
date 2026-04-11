@@ -1,4 +1,4 @@
-package ru.yandex.practicum.sleeptracker;
+package ru.yandex.practicum.sleeptracker.structures;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -7,12 +7,6 @@ public class SleepingSession {
     private final LocalDateTime startDateTime;
     private final LocalDateTime endDateTime;
     private final SleepQuality sleepQuality;
-
-    private static final int HOUR_23 = 23;
-    private static final int HOUR_22 = 22;
-    private static final int HOUR_9 = 9;
-    private static final int HOUR_7 = 7;
-    private static final int MINUTE_0 = 0;
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy");
@@ -66,17 +60,15 @@ public class SleepingSession {
     }
 
     public boolean isNightSleep() {
-        LocalTime startTime = getStartTime();
-        LocalTime endTime = getEndTime();
-        LocalDate startDate = getStartDate();
-        LocalDate endDate = getEndDate();
+        LocalDateTime nightWindowStart = startDateTime.with(LocalTime.MIDNIGHT);
+        LocalDateTime nightWindowEnd = startDateTime.with(LocalTime.of(6, 0));
 
-        if (startDate.equals(endDate)) {
-            return startTime.isBefore(LocalTime.of(6, 0)) &&
-                    endTime.isAfter(LocalTime.MIDNIGHT);
-        } else {
-            return true;
+        if (startDateTime.toLocalTime().isAfter(LocalTime.of(6, 0))) {
+            nightWindowStart = nightWindowStart.plusDays(1);
+            nightWindowEnd = nightWindowEnd.plusDays(1);
         }
+
+        return !endDateTime.isBefore(nightWindowStart) && !startDateTime.isAfter(nightWindowEnd);
     }
 
     public Chronotype getChronotypeForNight() {
@@ -84,14 +76,14 @@ public class SleepingSession {
             return null;
         }
 
-        LocalTime startTime = getStartTime();
-        LocalTime endTime = getEndTime();
+        LocalDateTime midPoint = startDateTime.plusSeconds(
+                Duration.between(startDateTime, endDateTime).getSeconds() / 2
+        );
+        LocalTime midTime = midPoint.toLocalTime();
 
-        if (startTime.isAfter(LocalTime.of(HOUR_23, MINUTE_0)) &&
-                endTime.isAfter(LocalTime.of(HOUR_9, MINUTE_0))) {
+        if (midTime.isAfter(LocalTime.of(3, 0)) && midTime.isBefore(LocalTime.of(6, 0))) {
             return Chronotype.OWL;
-        } else if (startTime.isBefore(LocalTime.of(HOUR_22, MINUTE_0)) &&
-                endTime.isBefore(LocalTime.of(HOUR_7, MINUTE_0))) {
+        } else if (midTime.isAfter(LocalTime.of(22, 0)) || midTime.isBefore(LocalTime.of(3, 0))) {
             return Chronotype.LARK;
         } else {
             return Chronotype.DOVE;

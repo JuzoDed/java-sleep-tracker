@@ -1,4 +1,6 @@
-package ru.yandex.practicum.sleeptracker;
+package ru.yandex.practicum.sleeptracker.structures;
+
+import ru.yandex.practicum.sleeptracker.functions.*;
 
 import java.io.IOException;
 import java.util.ArrayList;

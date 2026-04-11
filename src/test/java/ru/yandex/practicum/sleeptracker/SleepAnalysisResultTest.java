@@ -1,6 +1,7 @@
 package ru.yandex.practicum.sleeptracker;
 
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.sleeptracker.structures.SleepAnalysisResult;
 
 import static org.junit.jupiter.api.Assertions.*;
 

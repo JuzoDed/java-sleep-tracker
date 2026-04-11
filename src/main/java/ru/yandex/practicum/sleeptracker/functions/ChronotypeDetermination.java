@@ -1,4 +1,8 @@
-package ru.yandex.practicum.sleeptracker;
+package ru.yandex.practicum.sleeptracker.functions;
+
+import ru.yandex.practicum.sleeptracker.structures.Chronotype;
+import ru.yandex.practicum.sleeptracker.structures.SleepAnalysisResult;
+import ru.yandex.practicum.sleeptracker.structures.SleepingSession;
 
 import java.util.List;
 import java.util.Map;
@@ -8,9 +12,10 @@ import java.util.stream.Collectors;
 
 public class ChronotypeDetermination implements SleepFunction {
 
+    private static final String DESCRIPTION = "Хронотип пользователя";
+
     @Override
     public SleepAnalysisResult apply(List<SleepingSession> sessions) {
-
         Map<Chronotype, Long> stats = sessions.stream()
                 .map(SleepingSession::getChronotypeForNight)
                 .filter(Objects::nonNull)
@@ -47,6 +52,6 @@ public class ChronotypeDetermination implements SleepFunction {
                 stats.getOrDefault(Chronotype.DOVE, 0L)
         );
 
-        return new SleepAnalysisResult("Хронотип пользователя", result);
+        return new SleepAnalysisResult(DESCRIPTION, result);
     }
 }
