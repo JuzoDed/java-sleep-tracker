@@ -12,6 +12,14 @@ public class SleepingSession {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
 
+    private static final LocalTime NIGHT_START = LocalTime.MIDNIGHT;
+    private static final LocalTime NIGHT_END = LocalTime.of(6, 0);
+
+    private static final LocalTime LARK_SLEEP_START = LocalTime.of(22, 0);
+    private static final LocalTime LARK_WAKE_END = LocalTime.of(7, 0);
+    private static final LocalTime OWL_SLEEP_START = LocalTime.of(23, 0);
+    private static final LocalTime OWL_WAKE_END = LocalTime.of(9, 0);
+
     public SleepingSession(String startTime, String startDate, String endTime, String endDate, String sleepQuality) {
         LocalDate startDateParsed = LocalDate.parse(startDate, DATE_FORMATTER);
         LocalTime startTimeParsed = LocalTime.parse(startTime, TIME_FORMATTER);
@@ -60,15 +68,21 @@ public class SleepingSession {
     }
 
     public boolean isNightSleep() {
-        LocalDateTime nightWindowStart = startDateTime.with(LocalTime.MIDNIGHT);
-        LocalDateTime nightWindowEnd = startDateTime.with(LocalTime.of(6, 0));
+        LocalDate currentDate = startDateTime.toLocalDate();
+        LocalDate endDate = endDateTime.toLocalDate();
 
-        if (startDateTime.toLocalTime().isAfter(LocalTime.of(6, 0))) {
-            nightWindowStart = nightWindowStart.plusDays(1);
-            nightWindowEnd = nightWindowEnd.plusDays(1);
+        while (!currentDate.isAfter(endDate)) {
+            LocalDateTime nightStart = currentDate.atTime(NIGHT_START);
+            LocalDateTime nightEnd = currentDate.atTime(NIGHT_END);
+
+            if (endDateTime.isAfter(nightStart) && startDateTime.isBefore(nightEnd)) {
+                return true;
+            }
+
+            currentDate = currentDate.plusDays(1);
         }
 
-        return !endDateTime.isBefore(nightWindowStart) && !startDateTime.isAfter(nightWindowEnd);
+        return false;
     }
 
     public Chronotype getChronotypeForNight() {
@@ -76,14 +90,15 @@ public class SleepingSession {
             return null;
         }
 
-        LocalDateTime midPoint = startDateTime.plusSeconds(
-                Duration.between(startDateTime, endDateTime).getSeconds() / 2
-        );
-        LocalTime midTime = midPoint.toLocalTime();
+        LocalTime startTime = getStartTime();
+        LocalTime endTime = getEndTime();
 
-        if (midTime.isAfter(LocalTime.of(3, 0)) && midTime.isBefore(LocalTime.of(6, 0))) {
+        boolean isOwl = !startTime.isBefore(OWL_SLEEP_START) && !endTime.isBefore(OWL_WAKE_END);
+        boolean isLark = startTime.isBefore(LARK_SLEEP_START) && endTime.isBefore(LARK_WAKE_END);
+
+        if (isOwl) {
             return Chronotype.OWL;
-        } else if (midTime.isAfter(LocalTime.of(22, 0)) || midTime.isBefore(LocalTime.of(3, 0))) {
+        } else if (isLark) {
             return Chronotype.LARK;
         } else {
             return Chronotype.DOVE;
